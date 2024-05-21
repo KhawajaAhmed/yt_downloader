@@ -10,7 +10,7 @@ yt = YouTube(video_link)
 
 print(f"Title of the video: {yt.title}\nThe total views for this video are: {yt.views}")
 
-video_stream = yt.streams.filter(res="2160p").first()
+video_stream = yt.streams.filter(only_video=True).order_by('resolution').desc().first()
 print(video_stream)
 video_file = video_stream.download(filename=yt.title+'video') 
 
