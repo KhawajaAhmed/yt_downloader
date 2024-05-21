@@ -36,7 +36,7 @@ file_path = get_filePath()
 video_path = download_video(yt,file_path)
 audio_path = download_audio(yt,file_path)
 
-final_video_path = os.path.join(file_path, 'final_video.mp4')
+final_video_path = os.path.join(file_path, f'{yt.title}')
 
 subprocess.run(['ffmpeg', '-i', video_path, '-i', audio_path , '-c:v', 'copy', '-c:a', 'aac', final_video_path])
 
