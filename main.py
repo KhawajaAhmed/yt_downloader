@@ -1,15 +1,8 @@
-# Youtube Video Downloader- Khawaja Hussain Ahmed
-
 from pytube import YouTube
-from sys import argv
-import subprocess
 import os
+import subprocess
 
-file_path = ""
-video_link = argv[1]
-yt = YouTube(video_link)
-
-def get_filePath():
+def get_file_path():
     print("\nEnter filepath where you want video to be downloaded:")
     file_path = input().strip()
 
@@ -19,28 +12,36 @@ def get_filePath():
 
     return file_path
 
-def download_video(yt,file_path):
+def download_video(yt, file_path):
     video_stream = yt.streams.filter(only_video=True).order_by('resolution').desc().first()
+    return video_stream.download(file_path, filename=f'{yt.title}_video')
 
-    return ( video_stream.download(file_path,filename=f'{yt.title}video') ) 
+def download_audio(yt, file_path):
+    audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
+    return audio_stream.download(file_path, filename=f'{yt.title}_audio')
 
-def download_audio(yt,file_path):
-    audio_stream = yt.streams.filter(only_audio="True").order_by('abr').desc().first()
-    
-    return ( audio_stream.download(file_path,filename=f'{yt.title}+audio') )
+def combine_audio_video(video_path, audio_path, final_video_path):
+    subprocess.run(['ffmpeg', '-i', video_path, '-i', audio_path, '-c:v', 'copy', '-c:a', 'aac', final_video_path])
 
-print(f"Title of the video: {yt.title}\nThe total views for this video are: {yt.views}")
+def main():
+    video_link = input("Enter the YouTube video link: ")
+    yt = YouTube(video_link)
 
-file_path = get_filePath()
+    print(f"Title of the video: {yt.title}\nThe total views for this video are: {yt.views}")
 
-video_path = download_video(yt,file_path)
-audio_path = download_audio(yt,file_path)
+    file_path = get_file_path()
 
-final_video_path = os.path.join(file_path, f'{yt.title}')
+    video_path = download_video(yt, file_path)
+    audio_path = download_audio(yt, file_path)
 
-subprocess.run(['ffmpeg', '-i', video_path, '-i', audio_path , '-c:v', 'copy', '-c:a', 'aac', final_video_path])
+    final_video_path = os.path.join(file_path, f'{yt.title}.mp4')
 
-os.remove(video_path)
-os.remove(audio_path)
+    combine_audio_video(video_path, audio_path, final_video_path)
 
-print("Video downloaded successfully!")
+    os.remove(video_path)
+    os.remove(audio_path)
+
+    print("Video downloaded successfully!")
+
+if __name__ == "__main__":
+    main()
